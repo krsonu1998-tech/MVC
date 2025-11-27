@@ -8,6 +8,7 @@ namespace MVC.Models
     public class Customer
     {
         public int CustomerId { get; set; }
+       // public int CustomerName { get; set; }
 
         [Required, StringLength(200)]
         public string FullName { get; set; }

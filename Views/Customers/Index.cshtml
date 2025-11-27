@@ -1,31 +1,39 @@
 ﻿@model IEnumerable<MVC.Models.Customer>
 
 @{
-    ViewData["Title"] = "Customer List";
+    ViewData["Title"] = "Customer Dashboard System";
+     
+    // Safely read query string "view"
+    var viewQuery = Context.Request.Query["view"].ToString();
+    bool showCustomers = !string.IsNullOrEmpty(viewQuery) && viewQuery.ToLower() == "true";
 }
 
-<h1 class="mb-4 text-primary">Customer List</h1>
+<h1 class="mb-4 text-primary">Customer Dashboard</h1>
 
-@if (Model == null || !Model.Any())
+@if (!showCustomers)
 {
-    <div class="alert alert-warning p-3">
-        <strong>No customer exists in the database.</strong>
+    <!-- Step 1: Show options -->
+    <div class="d-flex gap-3">
+        <a asp-action="Create" class="btn btn-success btn-lg">Add Customer</a>
+        <a asp-action="Index" class="btn btn-primary btn-lg" asp-route-view="true">View Customers</a>
     </div>
-
-    <p>
-        <a asp-action="Create" class="btn btn-success">Register New Customer</a>
-    </p>
 }
 else
 {
-    <div id="app">
-        <div class="mb-3 d-flex justify-content-between align-items-center">
-            <a asp-action="Create" class="btn btn-primary">Create New Customer</a>
+    <!-- Step 2: Show customer table -->
+    <p>
+        <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+        <a asp-action="Create" class="btn btn-success">Add Customer</a>
+    </p>
 
-            <!-- Vue.js reactive search -->
-            <input type="text" v-model="search" class="form-control w-25" placeholder="Search by name..." />
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning p-3">
+            <strong>No customer exists in the database.</strong>
         </div>
-
+    }
+    else
+    {
         <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -35,44 +43,21 @@ else
                     <th>Actions</th>
                 </tr>
             </thead>
-
             <tbody>
-                <tr v-for="customer in filteredCustomers" :key="customer.customerId">
-                    <td>{{ customer.fullName }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>{{ customer.password }}</td>
-                    <td>
-                        <a :href="'/Customers/Edit/' + customer.customerId" class="btn btn-sm btn-warning">Edit</a>
-                        <a :href="'/Customers/Details/' + customer.customerId" class="btn btn-sm btn-info text-white">Details</a>
-                        <a :href="'/Customers/Delete/' + customer.customerId" class="btn btn-sm btn-danger">Delete</a>
-                    </td>
-                </tr>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.FullName</td>
+                        <td>@item.Email</td>
+                        <td>@item.Password</td> <!-- Optional: hide in production -->
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.CustomerId" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.CustomerId" class="btn btn-sm btn-info text-white">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.CustomerId" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
-    </div>
-}
-
-@section Scripts {
-    <!-- Vue.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
-
-    <script>
-        const customersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
-
-        new Vue({
-            el: '#app',
-            data: {
-                search: '',
-                customers: customersData
-            },
-            computed: {
-                filteredCustomers() {
-                    if (!this.search) return this.customers;
-                    return this.customers.filter(c =>
-                        c.fullName.toLowerCase().includes(this.search.toLowerCase())
-                    );
-                }
-            }
-        });
-    </script>
+    }
 }

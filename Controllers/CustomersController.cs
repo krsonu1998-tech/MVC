@@ -62,10 +62,6 @@ namespace MVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            foreach (var err in ModelState.Values.SelectMany(v => v.Errors))
-            {
-                Console.WriteLine(err.ErrorMessage);
-            }
             return View(customer);
         }
 
