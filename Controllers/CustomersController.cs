@@ -16,6 +16,7 @@ namespace MVC.Controllers
 
         public CustomersController(AppDbContext context)
         {
+            string name1 = "kumar";
            string name = "kumar sonu";
             _context = context;
         }
